@@ -9,27 +9,34 @@ object ShopListRepositoryImpl : ShopListRepository {
 
     private var autoIncrementId = 0
 
-    override suspend fun addShopItem(shopItem: ShopItem) {
+    init {
+        for (i in 0 until 10) {
+            val item = ShopItem("Name $i", i, true)
+            addShopItem(item)
+        }
+    }
+
+    override fun addShopItem(shopItem: ShopItem) {
         val newItem = shopItem.copy(id = autoIncrementId++)
         shopList.add(newItem)
     }
 
-    override suspend fun deleteShopItem(shopItem: ShopItem) {
+    override fun deleteShopItem(shopItem: ShopItem) {
         shopList.remove(shopItem)
     }
 
-    override suspend fun editShopItem(shopItem: ShopItem) {
+    override fun editShopItem(shopItem: ShopItem) {
         val oldItem = getShopItem(shopItem.id)
         shopList.remove(oldItem)
         shopList.add(shopItem)
     }
 
-    override suspend fun getShopItem(shopItemId: Int): ShopItem {
+    override fun getShopItem(shopItemId: Int): ShopItem {
         return shopList.find { it.id == shopItemId }
             ?: throw IllegalArgumentException("Item with id=$shopItemId not found")
     }
 
-    override suspend fun getShopList(): List<ShopItem> {
+    override fun getShopList(): List<ShopItem> {
         return shopList.toList()
     }
 }
