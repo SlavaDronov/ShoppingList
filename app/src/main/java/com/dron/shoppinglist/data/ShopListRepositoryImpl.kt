@@ -7,7 +7,7 @@ import com.dron.shoppinglist.domain.ShopListRepository
 
 object ShopListRepositoryImpl : ShopListRepository {
 
-    private val shopList = mutableListOf<ShopItem>()
+    private val shopList = sortedSetOf<ShopItem>({o1, o2 -> o1.id.compareTo(o2.id)})
 
     private var autoIncrementId = 0
 
@@ -32,10 +32,9 @@ object ShopListRepositoryImpl : ShopListRepository {
     }
 
     override fun editShopItem(shopItem: ShopItem) {
-        val index = shopList.indexOfFirst { it.id == shopItem.id }
-        if (index != -1) {
-            shopList[index] = shopItem
-        }
+        val oldItem = getShopItem(shopItem.id)
+        shopList.remove(oldItem)
+        shopList.add(shopItem)
         updateLiveData()
     }
 
