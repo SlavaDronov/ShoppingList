@@ -1,7 +1,6 @@
 package com.dron.shoppinglist.presentation
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dron.shoppinglist.data.ShopListRepositoryImpl
@@ -19,20 +18,11 @@ class MainViewModel : ViewModel() {
     private val deleteShopItemUseCase = DeleteShopItemUseCase(repository)
     private val editShopItemUseCase = EditShopItemUseCase(repository)
 
-    private val _shopList = MutableLiveData<List<ShopItem>>()
-    val shopList: LiveData<List<ShopItem>> = _shopList
-
-    fun getShopList() {
-        viewModelScope.launch {
-            val list = getShopListUseCase.getShopList()
-            _shopList.value = list
-        }
-    }
+    val shopList: LiveData<List<ShopItem>> = getShopListUseCase.getShopList()
 
     fun deleteShopItem(shopItem: ShopItem) {
         viewModelScope.launch {
             deleteShopItemUseCase.deleteShopItem(shopItem)
-            getShopList()
         }
     }
 
@@ -40,10 +30,8 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             val newItem = shopItem.copy(enabled = !shopItem.enabled)
             editShopItemUseCase.editShopItem(newItem)
-            getShopList()
         }
     }
-
 
     fun editShopItem(shopItem: ShopItem) {
         viewModelScope.launch {

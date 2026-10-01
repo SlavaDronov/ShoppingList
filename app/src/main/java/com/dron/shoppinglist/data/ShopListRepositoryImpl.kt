@@ -1,5 +1,7 @@
 package com.dron.shoppinglist.data
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.dron.shoppinglist.domain.ShopItem
 import com.dron.shoppinglist.domain.ShopListRepository
 
@@ -8,6 +10,8 @@ object ShopListRepositoryImpl : ShopListRepository {
     private val shopList = mutableListOf<ShopItem>()
 
     private var autoIncrementId = 0
+
+    private val shopListLiveData = MutableLiveData<List<ShopItem>>()
 
     init {
         for (i in 0 until 10) {
@@ -19,16 +23,20 @@ object ShopListRepositoryImpl : ShopListRepository {
     override fun addShopItem(shopItem: ShopItem) {
         val newItem = shopItem.copy(id = autoIncrementId++)
         shopList.add(newItem)
+        updateLiveData()
     }
 
     override fun deleteShopItem(shopItem: ShopItem) {
         shopList.remove(shopItem)
+        updateLiveData()
     }
 
     override fun editShopItem(shopItem: ShopItem) {
-        val oldItem = getShopItem(shopItem.id)
-        shopList.remove(oldItem)
-        shopList.add(shopItem)
+        val index = shopList.indexOfFirst { it.id == shopItem.id }
+        if (index != -1) {
+            shopList[index] = shopItem
+        }
+        updateLiveData()
     }
 
     override fun getShopItem(shopItemId: Int): ShopItem {
@@ -36,7 +44,11 @@ object ShopListRepositoryImpl : ShopListRepository {
             ?: throw IllegalArgumentException("Item with id=$shopItemId not found")
     }
 
-    override fun getShopList(): List<ShopItem> {
-        return shopList.toList()
+    override fun getShopList(): LiveData<List<ShopItem>> {
+        return shopListLiveData
+    }
+
+    private fun updateLiveData() {
+        shopListLiveData.value = shopList.toList()
     }
 }
