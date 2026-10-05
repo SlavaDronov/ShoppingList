@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.dron.shoppinglist.R
 import com.dron.shoppinglist.domain.ShopItem
@@ -34,10 +35,19 @@ class MainActivity : AppCompatActivity() {
 
         setupRecyclerView()
         setupClickListeners()
+        setupSwipeToDelete()
     }
 
     private fun setupRecyclerView() {
         recyclerViewShopList.adapter = shopListAdapter
+        recyclerViewShopList.recycledViewPool.setMaxRecycledViews(
+            ShopListAdapter.VIEW_TYPE_ENABLED,
+            ShopListAdapter.MAX_POOL_SIZE
+        )
+        recyclerViewShopList.recycledViewPool.setMaxRecycledViews(
+            ShopListAdapter.VIEW_TYPE_DISABLED,
+            ShopListAdapter.MAX_POOL_SIZE
+        )
     }
 
     private fun setupClickListeners() {
@@ -47,5 +57,27 @@ class MainActivity : AppCompatActivity() {
         shopListAdapter.onShopItemClickListener = {
             // TODO: открыть экран редактирования (следующий урок)
         }
+    }
+
+    private fun setupSwipeToDelete() {
+        val swipeCallback = object : ItemTouchHelper.SimpleCallback(
+            0,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    val shopItem = shopListAdapter.currentList[position]
+                    viewModel.deleteShopItem(shopItem)
+                }
+            }
+        }
+        ItemTouchHelper(swipeCallback).attachToRecyclerView(recyclerViewShopList)
     }
 }

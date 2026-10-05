@@ -1,5 +1,6 @@
 package com.dron.shoppinglist.presentation
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,11 +12,13 @@ import com.dron.shoppinglist.R
 import com.dron.shoppinglist.domain.ShopItem
 
 class ShopListAdapter : ListAdapter<ShopItem, ShopListAdapter.ShopItemViewHolder>(ShopItemDiffCallback()) {
+    var count = 0
 
     var onShopItemLongClickListener: ((ShopItem) -> Unit)? = null
     var onShopItemClickListener: ((ShopItem) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShopItemViewHolder {
+        Log.d("ShopListAdapter", "log: ${++count}")
         val layoutId = when (viewType) {
             VIEW_TYPE_ENABLED -> R.layout.item_shop_list
             VIEW_TYPE_DISABLED -> R.layout.item_shop_list_disabled
@@ -50,6 +53,7 @@ class ShopListAdapter : ListAdapter<ShopItem, ShopListAdapter.ShopItemViewHolder
 
             itemView.setOnClickListener {
                 onShopItemClickListener?.invoke(shopItem)
+
             }
             itemView.setOnLongClickListener {
                 onShopItemLongClickListener?.invoke(shopItem)
@@ -61,6 +65,7 @@ class ShopListAdapter : ListAdapter<ShopItem, ShopListAdapter.ShopItemViewHolder
     companion object {
         const val VIEW_TYPE_ENABLED = 1
         const val VIEW_TYPE_DISABLED = 0
+        const val MAX_POOL_SIZE = 15
     }
 
     class ShopItemDiffCallback : DiffUtil.ItemCallback<ShopItem>() {

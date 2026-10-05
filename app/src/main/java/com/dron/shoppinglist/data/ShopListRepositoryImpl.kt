@@ -8,7 +8,7 @@ import kotlin.random.Random
 
 object ShopListRepositoryImpl : ShopListRepository {
 
-    private val shopList = sortedSetOf<ShopItem>({o1, o2 -> o1.id.compareTo(o2.id)})
+    private val shopList = sortedSetOf<ShopItem>({ o1, o2 -> o1.id.compareTo(o2.id) })
 
     private var autoIncrementId = 0
 
@@ -17,8 +17,10 @@ object ShopListRepositoryImpl : ShopListRepository {
     init {
         for (i in 0 until 1000) {
             val item = ShopItem("Name $i", i, Random.nextBoolean())
-            addShopItem(item)
+            val newItem = item.copy(id = autoIncrementId++)
+            shopList.add(newItem)
         }
+        updateLiveData()
     }
 
     override fun addShopItem(shopItem: ShopItem) {
