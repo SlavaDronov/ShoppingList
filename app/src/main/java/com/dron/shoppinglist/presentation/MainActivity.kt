@@ -1,25 +1,27 @@
 package com.dron.shoppinglist.presentation
 
 import android.os.Bundle
-import android.util.Log
-import android.view.LayoutInflater
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.dron.shoppinglist.R
-import com.dron.shoppinglist.domain.ShopItem
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var viewModel: MainViewModel
+    private val viewModel: MainViewModel by viewModels()
     private lateinit var recyclerViewShopList: RecyclerView
-    private val shopListAdapter = ShopListAdapter()
+
+    private val shopListAdapter = ShopListAdapter(
+        onShopItemClickListener = { shopItem ->
+            // TODO: открыть экран редактирования (следующий урок)
+        },
+        onShopItemLongClickListener = { shopItem ->
+            viewModel.changeEnabledState(shopItem)
+        }
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,14 +29,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         recyclerViewShopList = findViewById(R.id.recyclerViewShopList)
-
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         viewModel.shopList.observe(this) {
             shopListAdapter.submitList(it)
         }
 
         setupRecyclerView()
-        setupClickListeners()
         setupSwipeToDelete()
     }
 
@@ -50,15 +49,6 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun setupClickListeners() {
-        shopListAdapter.onShopItemLongClickListener = {
-            viewModel.changeEnabledState(it)
-        }
-        shopListAdapter.onShopItemClickListener = {
-            // TODO: открыть экран редактирования (следующий урок)
-        }
-    }
-
     private fun setupSwipeToDelete() {
         val swipeCallback = object : ItemTouchHelper.SimpleCallback(
             0,
@@ -72,10 +62,10 @@ class MainActivity : AppCompatActivity() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.bindingAdapterPosition
-                if (position != RecyclerView.NO_POSITION) {
-                    val shopItem = shopListAdapter.currentList[position]
-                    viewModel.deleteShopItem(shopItem)
-                }
+                if (position == RecyclerView.NO_POSITION) return
+
+                val shopItem = shopListAdapter.currentList.getOrNull(position) ?: return
+                viewModel.deleteShopItem(shopItem)
             }
         }
         ItemTouchHelper(swipeCallback).attachToRecyclerView(recyclerViewShopList)
