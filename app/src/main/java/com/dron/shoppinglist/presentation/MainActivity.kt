@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.dron.shoppinglist.R
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
 
@@ -16,12 +17,18 @@ class MainActivity : AppCompatActivity() {
 
     private val shopListAdapter = ShopListAdapter(
         onShopItemClickListener = { shopItem ->
-            // TODO: открыть экран редактирования (следующий урок)
+            val intent = ShopItemActivity.newIntentEditItem(this, shopItem.id)
+            startActivity(intent)
         },
         onShopItemLongClickListener = { shopItem ->
             viewModel.changeEnabledState(shopItem)
         }
     )
+
+    private fun openAddScreen() {
+        val intent = ShopItemActivity.newIntentAddItem(this)
+        startActivity(intent)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +42,14 @@ class MainActivity : AppCompatActivity() {
 
         setupRecyclerView()
         setupSwipeToDelete()
+        setupFab()
+    }
+
+    private fun setupFab() {
+        val fab = findViewById<FloatingActionButton>(R.id.buttonAddShopItem)
+        fab.setOnClickListener {
+            openAddScreen()
+        }
     }
 
     private fun setupRecyclerView() {
