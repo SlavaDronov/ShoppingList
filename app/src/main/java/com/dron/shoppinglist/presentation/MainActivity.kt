@@ -1,88 +1,63 @@
 package com.dron.shoppinglist.presentation
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
+import android.util.Log
+import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.RecyclerView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.commit
 import com.dron.shoppinglist.R
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
-    private lateinit var recyclerViewShopList: RecyclerView
-
-    private val shopListAdapter = ShopListAdapter(
-        onShopItemClickListener = { shopItem ->
-            val intent = ShopItemActivity.newIntentEditItem(this, shopItem.id)
-            startActivity(intent)
-        },
-        onShopItemLongClickListener = { shopItem ->
-            viewModel.changeEnabledState(shopItem)
-        }
-    )
-
-    private fun openAddScreen() {
-        val intent = ShopItemActivity.newIntentAddItem(this)
-        startActivity(intent)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        recyclerViewShopList = findViewById(R.id.recyclerViewShopList)
-        viewModel.shopList.observe(this) {
-            shopListAdapter.submitList(it)
-        }
+        // Определяем режим: если есть shopItemContainer — ландшафт
+        val shopItemContainer = findViewById<View>(R.id.shopItemContainer)
+        viewModel.isTwoPane = shopItemContainer != null
+        Log.d("MainActivity", "isTwoPane = ${viewModel.isTwoPane}")
 
-        setupRecyclerView()
-        setupSwipeToDelete()
-        setupFab()
-    }
-
-    private fun setupFab() {
-        val fab = findViewById<FloatingActionButton>(R.id.buttonAddShopItem)
-        fab.setOnClickListener {
-            openAddScreen()
-        }
-    }
-
-    private fun setupRecyclerView() {
-        recyclerViewShopList.adapter = shopListAdapter
-        recyclerViewShopList.recycledViewPool.setMaxRecycledViews(
-            ShopListAdapter.VIEW_TYPE_ENABLED,
-            ShopListAdapter.MAX_POOL_SIZE
-        )
-        recyclerViewShopList.recycledViewPool.setMaxRecycledViews(
-            ShopListAdapter.VIEW_TYPE_DISABLED,
-            ShopListAdapter.MAX_POOL_SIZE
-        )
-    }
-
-    private fun setupSwipeToDelete() {
-        val swipeCallback = object : ItemTouchHelper.SimpleCallback(
-            0,
-            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
-        ) {
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean = false
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val position = viewHolder.bindingAdapterPosition
-                if (position == RecyclerView.NO_POSITION) return
-
-                val shopItem = shopListAdapter.currentList.getOrNull(position) ?: return
-                viewModel.deleteShopItem(shopItem)
+        // При повороте Android восстанавливает фрагменты,
+        // но в контейнеры, которых может не быть. Удаляем их.
+        if (savedInstanceState != null) {
+            supportFragmentManager.fragments.toList().forEach { fragment ->
+                supportFragmentManager.beginTransaction().remove(fragment).commitNow()
             }
         }
-        ItemTouchHelper(swipeCallback).attachToRecyclerView(recyclerViewShopList)
+
+        setupFragments()
+    }
+
+    private fun setupFragments() {
+        if (viewModel.isTwoPane) {
+            // Ландшафт: два контейнера
+            addFragmentIfNeeded(R.id.shopListContainer) { ShopListFragment() }
+            addFragmentIfNeeded(R.id.shopItemContainer) { ShopItemFragment() }
+        } else {
+            // Портрет: один контейнер с id = android.R.id.content
+            // используем контейнер по умолчанию (setContentView)
+            Log.d("MainActivity", "containerId=android.R.id.content, exists=${supportFragmentManager.findFragmentById(android.R.id.content) != null}")
+            if (supportFragmentManager.findFragmentById(android.R.id.content) == null) {
+                supportFragmentManager.commit {
+                    setReorderingAllowed(true)
+                    replace(android.R.id.content, ShopListFragment())
+                }
+            }
+        }
+    }
+
+    private fun addFragmentIfNeeded(containerId: Int, factory: () -> Fragment) {
+        Log.d("MainActivity", "containerId=$containerId, exists=${supportFragmentManager.findFragmentById(containerId) != null}")
+        if (supportFragmentManager.findFragmentById(containerId) == null) {
+            supportFragmentManager.commit {
+                setReorderingAllowed(true)
+                replace(containerId, factory())
+            }
+        }
     }
 }
