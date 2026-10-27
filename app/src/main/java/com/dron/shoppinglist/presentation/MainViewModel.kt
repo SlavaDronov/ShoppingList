@@ -8,7 +8,7 @@ import com.dron.shoppinglist.data.ShopListRepositoryImpl
 import com.dron.shoppinglist.domain.AddShopItemUseCase
 import com.dron.shoppinglist.domain.DeleteShopItemUseCase
 import com.dron.shoppinglist.domain.EditShopItemUseCase
-import com.dron.shoppinglist.domain.GetShopItemUseCase   // ← добавить импорт
+import com.dron.shoppinglist.domain.GetShopItemUseCase
 import com.dron.shoppinglist.domain.GetShopListUseCase
 import com.dron.shoppinglist.domain.ShopItem
 import kotlinx.coroutines.launch
@@ -21,20 +21,36 @@ class MainViewModel : ViewModel() {
     private val deleteShopItemUseCase = DeleteShopItemUseCase(repository)
     private val editShopItemUseCase = EditShopItemUseCase(repository)
     private val addShopItemUseCase = AddShopItemUseCase(repository)
-    private val getShopItemUseCase = GetShopItemUseCase(repository)  // ← добавить
+    private val getShopItemUseCase = GetShopItemUseCase(repository)
 
     val shopList: LiveData<List<ShopItem>> = getShopListUseCase.getShopList()
 
     private val _selectedShopItem = MutableLiveData<ShopItem?>()
     val selectedShopItem: LiveData<ShopItem?> = _selectedShopItem
 
+    // ← НОВОЕ: флаг "режим добавления" (FAB)
+    private val _isAddingMode = MutableLiveData<Boolean>()
+    val isAddingMode: LiveData<Boolean> = _isAddingMode
+
     var isTwoPane: Boolean = false
 
     fun selectShopItem(shopItem: ShopItem?) {
         _selectedShopItem.value = shopItem
+        _isAddingMode.value = false   // ← при выборе сбрасываем adding mode
     }
 
-    fun getShopItem(shopItemId: Int): ShopItem {   // ← добавить
+    // ← НОВОЕ
+    fun startAdding() {
+        _isAddingMode.value = true
+        _selectedShopItem.value = null
+    }
+
+    // ← НОВОЕ
+    fun stopAdding() {
+        _isAddingMode.value = false
+    }
+
+    fun getShopItem(shopItemId: Int): ShopItem {
         return getShopItemUseCase.getShopItem(shopItemId)
     }
 

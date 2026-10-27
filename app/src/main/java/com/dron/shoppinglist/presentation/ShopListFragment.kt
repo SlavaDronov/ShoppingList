@@ -93,7 +93,7 @@ class ShopListFragment : Fragment() {
     private fun setupFab() {
         binding.buttonAddShopItem.setOnClickListener {
             if (viewModel.isTwoPane) {
-                viewModel.selectShopItem(null)  // пустая форма справа
+                viewModel.startAdding()   // ← вместо selectShopItem(null)
             } else {
                 val intent = ShopItemActivity.newIntentAddItem(requireContext())
                 startActivity(intent)

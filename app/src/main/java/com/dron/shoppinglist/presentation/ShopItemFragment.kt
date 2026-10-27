@@ -49,7 +49,6 @@ class ShopItemFragment : Fragment() {
         }
 
         setupClickListener()
-        observeViewModel()
     }
 
     private fun setupClickListener() {
@@ -76,11 +75,12 @@ class ShopItemFragment : Fragment() {
 
             // Сохранение
             if (shopItemId == ShopItem.UNDEFINED_ID) {
+                // Добавление
                 viewModel.addShopItem(ShopItem(name = name, count = count))
             } else {
-                val current = viewModel.selectedShopItem.value
-                val updated = current?.copy(name = name, count = count)
-                    ?: ShopItem(name = name, count = count, id = shopItemId)
+                // Редактирование — копируем существующий, меняем name/count
+                val existing = viewModel.getShopItem(shopItemId)
+                val updated = existing.copy(name = name, count = count)
                 viewModel.editShopItem(updated)
             }
 
@@ -89,31 +89,11 @@ class ShopItemFragment : Fragment() {
                 // Внутри ShopItemActivity — закрываем экран
                 requireActivity().finish()
             } else {
-                // Внутри MainActivity (master-detail) — сбрасываем выбор
+                // Внутри MainActivity (master-detail) — сбрасываем выбор,
+                // MainActivity сам уберёт фрагмент
                 viewModel.selectShopItem(null)
-                clearFields()
             }
         }
-    }
-
-    private fun observeViewModel() {
-        viewModel.selectedShopItem.observe(viewLifecycleOwner) { shopItem ->
-            if (shopItem != null) {
-                shopItemId = shopItem.id
-                binding.etName.setText(shopItem.name)
-                binding.etCount.setText(shopItem.count.toString())
-            } else {
-                shopItemId = ShopItem.UNDEFINED_ID
-                clearFields()
-            }
-        }
-    }
-
-    private fun clearFields() {
-        binding.etName.text?.clear()
-        binding.etCount.text?.clear()
-        binding.tilName.error = null
-        binding.tilCount.error = null
     }
 
     override fun onDestroyView() {
