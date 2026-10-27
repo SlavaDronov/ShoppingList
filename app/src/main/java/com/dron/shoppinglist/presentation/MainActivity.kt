@@ -3,6 +3,7 @@ package com.dron.shoppinglist.presentation
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -11,7 +12,7 @@ import androidx.fragment.app.commit
 import com.dron.shoppinglist.R
 import com.dron.shoppinglist.domain.ShopItem
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MessageHost {
 
     private val viewModel: MainViewModel by viewModels()
     private var currentShopItemId: Int = ShopItem.UNDEFINED_ID
@@ -32,8 +33,13 @@ class MainActivity : AppCompatActivity() {
 
         setupFragments()
         observeSelectedItem()
-        observeAddingMode()   // ← НОВОЕ
+        observeAddingMode()
         setupBackPressed()
+    }
+
+    // ← НОВОЕ: реализация интерфейса
+    override fun showMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     private fun setupFragments() {
@@ -48,7 +54,6 @@ class MainActivity : AppCompatActivity() {
         if (!viewModel.isTwoPane) return
 
         viewModel.selectedShopItem.observe(this) { shopItem ->
-            // Если включён режим добавления — не реагируем на selectedShopItem
             if (viewModel.isAddingMode.value == true) return@observe
 
             val fragment = supportFragmentManager.findFragmentById(R.id.shopItemContainer)
@@ -76,13 +81,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ← НОВЫЙ метод: обрабатывает FAB (режим добавления)
     private fun observeAddingMode() {
         if (!viewModel.isTwoPane) return
 
         viewModel.isAddingMode.observe(this) { isAdding ->
             if (isAdding) {
-                // Показать пустую форму
                 currentShopItemId = ShopItem.UNDEFINED_ID
                 supportFragmentManager.commit {
                     setReorderingAllowed(true)
@@ -92,7 +95,6 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
             }
-            // Когда isAdding = false — форма управляется observeSelectedItem
         }
     }
 
@@ -104,7 +106,7 @@ class MainActivity : AppCompatActivity() {
                         .findFragmentById(R.id.shopItemContainer) as? ShopItemFragment
 
                     if (shopItemFragment != null) {
-                        viewModel.stopAdding()        // ← НОВОЕ
+                        viewModel.stopAdding()
                         viewModel.selectShopItem(null)
                         return
                     }

@@ -1,5 +1,6 @@
 package com.dron.shoppinglist.presentation
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,9 +20,26 @@ class ShopItemFragment : Fragment() {
 
     private var shopItemId: Int = ShopItem.UNDEFINED_ID
 
-    // Определяем, внутри какой Activity находимся
+    // ← НОВОЕ: ссылка на Activity через интерфейс
+    private var messageHost: MessageHost? = null
+
     private val isInsideShopItemActivity: Boolean
         get() = requireActivity() is ShopItemActivity
+
+    // ← НОВОЕ: получаем ссылку при прикреплении
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        messageHost = context as? MessageHost
+            ?: throw RuntimeException(
+                "${context.javaClass.simpleName} must implement MessageHost"
+            )
+    }
+
+    // ← НОВОЕ: обнуляем при откреплении
+    override fun onDetach() {
+        super.onDetach()
+        messageHost = null
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +59,6 @@ class ShopItemFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Загружаем элемент, если редактирование
         if (shopItemId != ShopItem.UNDEFINED_ID) {
             val shopItem = viewModel.getShopItem(shopItemId)
             binding.etName.setText(shopItem.name)
@@ -75,22 +92,21 @@ class ShopItemFragment : Fragment() {
 
             // Сохранение
             if (shopItemId == ShopItem.UNDEFINED_ID) {
-                // Добавление
                 viewModel.addShopItem(ShopItem(name = name, count = count))
             } else {
-                // Редактирование — копируем существующий, меняем name/count
                 val existing = viewModel.getShopItem(shopItemId)
                 val updated = existing.copy(name = name, count = count)
                 viewModel.editShopItem(updated)
             }
 
+            // ← НОВОЕ: сообщение через Activity
+            messageHost?.showMessage("Сохранено")
+
             // Логика после сохранения
             if (isInsideShopItemActivity) {
-                // Внутри ShopItemActivity — закрываем экран
                 requireActivity().finish()
             } else {
-                // Внутри MainActivity (master-detail) — сбрасываем выбор,
-                // MainActivity сам уберёт фрагмент
+                viewModel.stopAdding()
                 viewModel.selectShopItem(null)
             }
         }
