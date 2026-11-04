@@ -1,5 +1,6 @@
 package com.dron.shoppinglist.presentation
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,6 +14,8 @@ import com.dron.shoppinglist.databinding.FragmentShopListBinding
 
 class ShopListFragment : Fragment() {
 
+    private val tag = "FragmentLifecycle"
+
     private var _binding: FragmentShopListBinding? = null
     private val binding get() = _binding!!
 
@@ -20,7 +23,7 @@ class ShopListFragment : Fragment() {
 
     private val shopListAdapter = ShopListAdapter(
         onShopItemClickListener = { shopItem ->
-            android.util.Log.d("ShopListFragment", "clicked, isTwoPane=${viewModel.isTwoPane}, item=${shopItem.name}")
+            Log.d("ShopListFragment", "clicked, isTwoPane=${viewModel.isTwoPane}, item=${shopItem.name}")
             if (viewModel.isTwoPane) {
                 viewModel.selectShopItem(shopItem)
             } else {
@@ -33,17 +36,31 @@ class ShopListFragment : Fragment() {
         }
     )
 
+    // ========== ЖИЗНЕННЫЙ ЦИКЛ ==========
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        Log.d(tag, "ShopListFragment.onAttach() — прикреплён к ${context.javaClass.simpleName}")
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Log.d(tag, "ShopListFragment.onCreate() savedInstanceState=${savedInstanceState != null}")
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        Log.d(tag, "ShopListFragment.onCreateView() — создаём View")
         _binding = FragmentShopListBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d(tag, "ShopListFragment.onViewCreated() — View создан")
 
         view.post {
             Log.d("ShopListFragment", "list root size: ${view.width}x${view.height}")
@@ -55,6 +72,54 @@ class ShopListFragment : Fragment() {
         setupFab()
         observeViewModel()
     }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        Log.d(tag, "ShopListFragment.onViewStateRestored() savedInstanceState=${savedInstanceState != null}")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d(tag, "ShopListFragment.onStart() — видим")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d(tag, "ShopListFragment.onResume() — в фокусе")
+    }
+
+    override fun onPause() {
+        Log.d(tag, "ShopListFragment.onPause() — теряет фокус")
+        super.onPause()
+    }
+
+    override fun onStop() {
+        Log.d(tag, "ShopListFragment.onStop() — не видим")
+        super.onStop()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        Log.d(tag, "ShopListFragment.onSaveInstanceState() — сохраняем состояние")
+    }
+
+    override fun onDestroyView() {
+        Log.d(tag, "ShopListFragment.onDestroyView() — View уничтожается")
+        super.onDestroyView()
+        _binding = null
+    }
+
+    override fun onDestroy() {
+        Log.d(tag, "ShopListFragment.onDestroy() — фрагмент уничтожается")
+        super.onDestroy()
+    }
+
+    override fun onDetach() {
+        Log.d(tag, "ShopListFragment.onDetach() — откреплён")
+        super.onDetach()
+    }
+
+    // ========== ЛОГИКА ==========
 
     private fun setupRecyclerView() {
         binding.recyclerViewShopList.adapter = shopListAdapter
@@ -93,7 +158,7 @@ class ShopListFragment : Fragment() {
     private fun setupFab() {
         binding.buttonAddShopItem.setOnClickListener {
             if (viewModel.isTwoPane) {
-                viewModel.startAdding()   // ← вместо selectShopItem(null)
+                viewModel.startAdding()
             } else {
                 val intent = ShopItemActivity.newIntentAddItem(requireContext())
                 startActivity(intent)
@@ -105,10 +170,5 @@ class ShopListFragment : Fragment() {
         viewModel.shopList.observe(viewLifecycleOwner) {
             shopListAdapter.submitList(it)
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

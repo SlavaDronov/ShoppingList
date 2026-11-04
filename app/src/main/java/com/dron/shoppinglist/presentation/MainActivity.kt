@@ -14,17 +14,23 @@ import com.dron.shoppinglist.domain.ShopItem
 
 class MainActivity : AppCompatActivity(), MessageHost {
 
+    private val tag = "MainActivityLifecycle"
+
     private val viewModel: MainViewModel by viewModels()
     private var currentShopItemId: Int = ShopItem.UNDEFINED_ID
 
+    // ========== ЖИЗНЕННЫЙ ЦИКЛ ACTIVITY ==========
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(tag, "onCreate(savedInstanceState=${savedInstanceState != null})")
         setContentView(R.layout.activity_main)
 
         viewModel.isTwoPane = findViewById<View>(R.id.shopItemContainer) != null
         Log.d("MainActivity", "isTwoPane = ${viewModel.isTwoPane}")
 
         if (savedInstanceState != null) {
+            Log.d(tag, "onCreate: восстановление после поворота/смерти — очищаем фрагменты")
             viewModel.selectShopItem(null)
             supportFragmentManager.fragments.toList().forEach { fragment ->
                 supportFragmentManager.beginTransaction().remove(fragment).commitNow()
@@ -37,10 +43,43 @@ class MainActivity : AppCompatActivity(), MessageHost {
         setupBackPressed()
     }
 
-    // ← НОВОЕ: реализация интерфейса
+    override fun onStart() {
+        super.onStart()
+        Log.d(tag, "onStart()")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d(tag, "onResume()")
+    }
+
+    override fun onPause() {
+        Log.d(tag, "onPause()")
+        super.onPause()
+    }
+
+    override fun onStop() {
+        Log.d(tag, "onStop()")
+        super.onStop()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        Log.d(tag, "onSaveInstanceState()")
+    }
+
+    override fun onDestroy() {
+        Log.d(tag, "onDestroy()")
+        super.onDestroy()
+    }
+
+    // ========== РЕАЛИЗАЦИЯ MessageHost ==========
+
     override fun showMessage(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
+
+    // ========== ЛОГИКА ==========
 
     private fun setupFragments() {
         if (viewModel.isTwoPane) {
