@@ -123,14 +123,6 @@ class ShopListFragment : Fragment() {
 
     private fun setupRecyclerView() {
         binding.recyclerViewShopList.adapter = shopListAdapter
-        binding.recyclerViewShopList.recycledViewPool.setMaxRecycledViews(
-            ShopListAdapter.VIEW_TYPE_ENABLED,
-            ShopListAdapter.MAX_POOL_SIZE
-        )
-        binding.recyclerViewShopList.recycledViewPool.setMaxRecycledViews(
-            ShopListAdapter.VIEW_TYPE_DISABLED,
-            ShopListAdapter.MAX_POOL_SIZE
-        )
     }
 
     private fun setupSwipeToDelete() {
