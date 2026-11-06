@@ -1,6 +1,5 @@
 package com.dron.shoppinglist.presentation
 
-import android.view.View
 import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.RecyclerView
 import com.dron.shoppinglist.BR

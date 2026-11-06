@@ -29,8 +29,7 @@ class ShopListAdapter(
     }
 
     override fun onBindViewHolder(holder: ShopItemViewHolder, position: Int) {
-        val shopItem = getItem(position)
-        holder.bind(shopItem)
+        holder.bind(getItem(position))
     }
 
     override fun getItemViewType(position: Int): Int {
