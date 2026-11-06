@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.legacy.kapt)
+
 }
 
 android {
@@ -27,7 +29,7 @@ android {
     }
 
     buildFeatures {
-            viewBinding = true
+        dataBinding = true
     }
 
     compileOptions {

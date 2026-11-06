@@ -6,20 +6,24 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.commit
 import com.dron.shoppinglist.R
+import com.dron.shoppinglist.databinding.ActivityShopItemBinding
 import com.dron.shoppinglist.domain.ShopItem
 
 class ShopItemActivity : AppCompatActivity(), MessageHost {
 
     private val tag = "ShopItemActivityLifecycle"
+    private lateinit var binding: ActivityShopItemBinding
 
     // ========== ЖИЗНЕННЫЙ ЦИКЛ ==========
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(tag, "onCreate(savedInstanceState=${savedInstanceState != null})")
-        setContentView(R.layout.activity_shop_item)
+
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_shop_item)
 
         val shopItemId = intent.getIntExtra(EXTRA_SHOP_ITEM_ID, ShopItem.UNDEFINED_ID)
 
@@ -27,7 +31,7 @@ class ShopItemActivity : AppCompatActivity(), MessageHost {
             supportFragmentManager.commit {
                 setReorderingAllowed(true)
                 replace(
-                    R.id.shopItemFragmentContainer,
+                    binding.shopItemFragmentContainer.id,
                     ShopItemFragment.newInstance(shopItemId)
                 )
             }

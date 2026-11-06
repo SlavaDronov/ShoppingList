@@ -1,34 +1,20 @@
 package com.dron.shoppinglist.presentation
 
 import android.view.View
-import android.widget.TextView
+import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.RecyclerView
-import com.dron.shoppinglist.R
+import com.dron.shoppinglist.BR
 import com.dron.shoppinglist.domain.ShopItem
 
 class ShopItemViewHolder(
-    itemView: View,
-    viewType: Int,
+    private val binding: ViewDataBinding,
     private val onClick: (ShopItem) -> Unit,
     private val onLongClick: (ShopItem) -> Unit
-) : RecyclerView.ViewHolder(itemView) {
-
-    private val tvName: TextView
-    private val tvCount: TextView
-
-    init {
-        if (viewType == ShopListAdapter.VIEW_TYPE_ENABLED) {
-            tvName = itemView.findViewById(R.id.tvName)
-            tvCount = itemView.findViewById(R.id.tvCount)
-        } else {
-            tvName = itemView.findViewById(R.id.tvNameDisabled)
-            tvCount = itemView.findViewById(R.id.tvCountDisabled)
-        }
-    }
+) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(shopItem: ShopItem) {
-        tvName.text = shopItem.name
-        tvCount.text = shopItem.count.toString()
+        binding.setVariable(BR.shopItem, shopItem)
+        binding.executePendingBindings()
 
         itemView.setOnClickListener { onClick(shopItem) }
         itemView.setOnLongClickListener {

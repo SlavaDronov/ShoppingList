@@ -2,6 +2,8 @@ package com.dron.shoppinglist.presentation
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.ListAdapter
 import com.dron.shoppinglist.R
 import com.dron.shoppinglist.domain.ShopItem
@@ -17,11 +19,10 @@ class ShopListAdapter(
             VIEW_TYPE_DISABLED -> R.layout.item_shop_list_disabled
             else -> throw RuntimeException("Unknown view type: $viewType")
         }
-        val view = LayoutInflater.from(parent.context)
-            .inflate(layoutId, parent, false)
+        val inflater = LayoutInflater.from(parent.context)
+        val binding: ViewDataBinding = DataBindingUtil.inflate(inflater, layoutId, parent, false)
         return ShopItemViewHolder(
-            itemView = view,
-            viewType = viewType,
+            binding = binding,
             onClick = onShopItemClickListener,
             onLongClick = onShopItemLongClickListener
         )

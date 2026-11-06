@@ -7,9 +7,11 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import com.dron.shoppinglist.R
+import com.dron.shoppinglist.databinding.ActivityMainBinding
 import com.dron.shoppinglist.domain.ShopItem
 
 class MainActivity : AppCompatActivity(), MessageHost {
@@ -18,15 +20,19 @@ class MainActivity : AppCompatActivity(), MessageHost {
 
     private val viewModel: MainViewModel by viewModels()
     private var currentShopItemId: Int = ShopItem.UNDEFINED_ID
+    private lateinit var binding: ActivityMainBinding
 
     // ========== ЖИЗНЕННЫЙ ЦИКЛ ACTIVITY ==========
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(tag, "onCreate(savedInstanceState=${savedInstanceState != null})")
-        setContentView(R.layout.activity_main)
 
-        viewModel.isTwoPane = findViewById<View>(R.id.shopItemContainer) != null
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = this
+
+        viewModel.isTwoPane = binding.shopItemContainer != null
         Log.d("MainActivity", "isTwoPane = ${viewModel.isTwoPane}")
 
         if (savedInstanceState != null) {
