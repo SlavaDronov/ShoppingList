@@ -45,6 +45,19 @@ dependencies {
     implementation(libs.material)
     implementation("androidx.recyclerview:recyclerview:1.4.0")
     implementation("androidx.fragment:fragment-ktx:1.8.5")
+    // Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx) // Для поддержки корутин и Flow в Room
+    // Компилятор Room (через KAPT, так как у вас legacy-kapt)
+    kapt(libs.androidx.room.compiler)
+    // Корутины
+    implementation(libs.kotlinx.coroutines.android)
+    // ViewModel + viewModelScope
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    // LiveData + observe + Transformations
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+    // Lifecycle + lifecycleScope (если ещё нет)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)

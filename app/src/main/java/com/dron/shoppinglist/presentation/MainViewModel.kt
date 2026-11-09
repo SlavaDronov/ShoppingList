@@ -1,5 +1,7 @@
 package com.dron.shoppinglist.presentation
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,9 +15,9 @@ import com.dron.shoppinglist.domain.GetShopListUseCase
 import com.dron.shoppinglist.domain.ShopItem
 import kotlinx.coroutines.launch
 
-class MainViewModel : ViewModel() {
+class MainViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = ShopListRepositoryImpl
+    private val repository = ShopListRepositoryImpl(application)
 
     private val getShopListUseCase = GetShopListUseCase(repository)
     private val deleteShopItemUseCase = DeleteShopItemUseCase(repository)
@@ -50,7 +52,7 @@ class MainViewModel : ViewModel() {
         _isAddingMode.value = false
     }
 
-    fun getShopItem(shopItemId: Int): ShopItem {
+    suspend fun getShopItem(shopItemId: Int): ShopItem? {
         return getShopItemUseCase.getShopItem(shopItemId)
     }
 

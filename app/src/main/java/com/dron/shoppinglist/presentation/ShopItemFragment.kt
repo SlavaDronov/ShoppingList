@@ -8,9 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.dron.shoppinglist.R
 import com.dron.shoppinglist.databinding.FragmentShopItemBinding
 import com.dron.shoppinglist.domain.ShopItem
+import kotlinx.coroutines.launch
 
 class ShopItemFragment : Fragment() {
 
@@ -57,9 +59,13 @@ class ShopItemFragment : Fragment() {
         Log.d(tag, "onViewCreated() — View создан, можно вешать слушатели")
 
         if (shopItemId != ShopItem.UNDEFINED_ID) {
-            val shopItem = viewModel.getShopItem(shopItemId)
-            binding.etName.setText(shopItem.name)
-            binding.etCount.setText(shopItem.count.toString())
+            viewLifecycleOwner.lifecycleScope.launch {
+                val shopItem = viewModel.getShopItem(shopItemId)
+                if (shopItem != null) {
+                    binding.etName.setText(shopItem.name)
+                    binding.etCount.setText(shopItem.count.toString())
+                }
+            }
         }
         setupClickListener()
     }
@@ -134,8 +140,12 @@ class ShopItemFragment : Fragment() {
             if (shopItemId == ShopItem.UNDEFINED_ID) {
                 viewModel.addShopItem(ShopItem(name = name, count = count))
             } else {
-                val existing = viewModel.getShopItem(shopItemId)
-                viewModel.editShopItem(existing.copy(name = name, count = count))
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val existing = viewModel.getShopItem(shopItemId)
+                    if (existing != null) {
+                        viewModel.editShopItem(existing.copy(name = name, count = count))
+                    }
+                }
             }
 
             messageHost?.showMessage("Сохранено")
